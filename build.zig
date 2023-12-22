@@ -1,67 +1,61 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
-    const target = b.standardTargetOptions(.{});
+const Scanner = @import("deps/zig-wayland/build.zig").Scanner;
 
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
+pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const exe = b.addExecutable(.{
+    const scanner = Scanner.create(b, .{});
+    scanner.addSystemProtocol("stable/xdg-shell/xdg-shell.xml");
+
+    const wayland = b.createModule(.{ .source_file = scanner.result });
+    const xkbcommon = b.createModule(.{
+        .source_file = .{ .path = "deps/zig-xkbcommon/src/xkbcommon.zig" },
+    });
+    const pixman = b.createModule(.{
+        .source_file = .{ .path = "deps/zig-pixman/pixman.zig" },
+    });
+    const wlroots = b.createModule(.{
+        .source_file = .{ .path = "../src/wlroots.zig" },
+        .dependencies = &.{
+            .{ .name = "wayland", .module = wayland },
+            .{ .name = "xkbcommon", .module = xkbcommon },
+            .{ .name = "pixman", .module = pixman },
+        },
+    });
+
+    // These must be manually kept in sync with the versions wlroots supports
+    // until wlroots gives the option to request a specific version.
+    scanner.generate("wl_compositor", 4);
+    scanner.generate("wl_subcompositor", 1);
+    scanner.generate("wl_shm", 1);
+    scanner.generate("wl_output", 4);
+    scanner.generate("wl_seat", 7);
+    scanner.generate("wl_data_device_manager", 3);
+    scanner.generate("xdg_wm_base", 2);
+
+    const gaze = b.addExecutable(.{
         .name = "gaze",
-        // In this case the main source file is merely a path, however, in more
-        // complicated build scripts, this could be a generated file.
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = optimize,
     });
 
-    // This declares intent for the executable to be installed into the
-    // standard location when the user invokes the "install" step (the default
-    // step when running `zig build`).
-    b.installArtifact(exe);
+    gaze.linkLibC();
 
-    // This *creates* a Run step in the build graph, to be executed when another
-    // step is evaluated that depends on it. The next line below will establish
-    // such a dependency.
-    const run_cmd = b.addRunArtifact(exe);
+    gaze.addModule("wayland", wayland);
+    gaze.linkSystemLibrary("wayland-server");
 
-    // By making the run step depend on the install step, it will be run from the
-    // installation directory rather than directly from within the cache directory.
-    // This is not necessary, however, if the application depends on other installed
-    // files, this ensures they will be present and in the expected location.
-    run_cmd.step.dependOn(b.getInstallStep());
+    // TODO: remove when https://github.com/ziglang/zig/issues/131 is implemented
+    scanner.addCSource(gaze);
 
-    // This allows the user to pass arguments to the application in the build
-    // command itself, like this: `zig build run -- arg1 arg2 etc`
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    gaze.addModule("xkbcommon", xkbcommon);
+    gaze.linkSystemLibrary("xkbcommon");
 
-    // This creates a build step. It will be visible in the `zig build --help` menu,
-    // and can be selected like this: `zig build run`
-    // This will evaluate the `run` step rather than the default, which is "install".
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
+    gaze.addModule("wlroots", wlroots);
+    gaze.linkSystemLibrary("wlroots");
+    gaze.linkSystemLibrary("pixman-1");
 
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const run_unit_tests = b.addRunArtifact(unit_tests);
-
-    // Similar to creating the run step earlier, this exposes a `test` step to
-    // the `zig build --help` menu, providing a way for the user to request
-    // running the unit tests.
-    const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_unit_tests.step);
+    b.installArtifact(gaze);
 }
