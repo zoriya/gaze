@@ -17,7 +17,7 @@ pub fn build(b: *std.Build) void {
         .source_file = .{ .path = "deps/zig-pixman/pixman.zig" },
     });
     const wlroots = b.createModule(.{
-        .source_file = .{ .path = "../src/wlroots.zig" },
+        .source_file = .{ .path = "deps/zig-wlroots/src/wlroots.zig" },
         .dependencies = &.{
             .{ .name = "wayland", .module = wayland },
             .{ .name = "xkbcommon", .module = xkbcommon },

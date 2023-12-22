@@ -20,6 +20,7 @@
   }: let
     version = self.shortRev or "dirty";
     supportedSystems = ["x86_64-linux"];
+    xwaylandSupport = true;
 
     # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
     forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
@@ -59,7 +60,15 @@
                 [
                   zig
                   wlroots
+                  libGL
+                  libevdev
+                  libinput
+                  libxkbcommon
+                  pixman
+                  udev
+                  wayland-protocols
                 ]
+                ++ lib.optional xwaylandSupport xorg.libX11
                 ++ (
                   if inShell
                   then [
@@ -67,6 +76,12 @@
                   ]
                   else []
                 );
+
+              nativeBuildInputs = [
+                pkg-config
+                wayland
+                xwayland
+              ];
 
               target = "-Dcpu=baseline -Doptimize=ReleaseSafe";
 
