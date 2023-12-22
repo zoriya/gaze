@@ -3,6 +3,12 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
 
+    zig-overlay.url = "github:mitchellh/zig-overlay";
+    zig-overlay.inputs.nixpkgs.follows = "nixpkgs";
+
+    zls-overlay.url = "github:zigtools/zls";
+    zls-overlay.inputs.nixpkgs.follows = "nixpkgs";
+
     wlroots-src = {
       type = "gitlab";
       host = "gitlab.freedesktop.org";
@@ -17,6 +23,8 @@
     self,
     nixpkgs,
     wlroots-src,
+    zig-overlay,
+    zls-overlay,
   }: let
     version = self.shortRev or "dirty";
     supportedSystems = ["x86_64-linux"];
@@ -58,7 +66,7 @@
 
               buildInputs =
                 [
-                  zig
+                  zig-overlay.packages.${system}.master
                   wlroots
                   libGL
                   libevdev
@@ -72,7 +80,7 @@
                 ++ (
                   if inShell
                   then [
-                    # TODO: In 'nix develop', provide some developer tools.
+                    zls-overlay.packages.${system}.default
                   ]
                   else []
                 );
