@@ -3,25 +3,30 @@ const std = @import("std");
 const wl = @import("wayland").server.wl;
 const wlr = @import("wlroots");
 
+const events = @import("event.zig");
+
 pub const Server = struct {
     wl_server: *wl.Server,
-    backend:  *wlr.Backend,
+    backend: *wlr.Backend,
     renderer: *wlr.Renderer,
     allocator: *wlr.Allocator,
 
     output_layout: *wlr.OutputLayout,
 
-    pub fn create() !Server {
+    events: events.Events,
+
+    pub fn init(self: *Server) !void {
         const wl_server = try wl.Server.create();
         const backend = try wlr.Backend.autocreate(wl_server, null);
         const renderer = try wlr.Renderer.autocreate(backend);
 
-        const self = Server {
+        self.* = Server{
             .wl_server = wl_server,
             .backend = backend,
             .renderer = renderer,
             .allocator = try wlr.Allocator.autocreate(backend, renderer),
             .output_layout = try wlr.OutputLayout.create(),
+            .events = undefined,
         };
         errdefer self.destroy();
 
@@ -30,11 +35,16 @@ pub const Server = struct {
         _ = try wlr.Subcompositor.create(self.wl_server);
         _ = try wlr.DataDeviceManager.create(self.wl_server);
 
-        return self;
+        self.events.init(*self);
+        self.attach_events();
     }
 
-    pub fn destroy(server: Server) void {
-        server.wl_server.destroyClients();
-        server.wl_server.destroy();
+    fn attach_events(self: Server) void {
+        _ = self;
+    }
+
+    pub fn destroy(self: Server) void {
+        self.wl_server.destroyClients();
+        self.wl_server.destroy();
     }
 };

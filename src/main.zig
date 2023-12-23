@@ -8,6 +8,7 @@ const Server = @import("server.zig").Server;
 pub fn main() anyerror!void {
     wlr.log.init(.debug, null);
 
-    const server = try Server.create();
+    var server: Server = undefined;
+    try Server.init(&server);
     defer server.destroy();
 }
