@@ -11,4 +11,11 @@ pub fn main() anyerror!void {
     var server: Server = undefined;
     try Server.init(&server);
     defer server.destroy();
+
+    var buf: [11]u8 = undefined;
+    const socket = try server.wl_server.addSocketAuto(&buf);
+
+    try server.backend.start();
+    std.log.info("Running compositor on WAYLAND_DISPLAY={s}", .{socket});
+    server.wl_server.run();
 }

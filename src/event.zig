@@ -4,16 +4,17 @@ const wlr = @import("wlroots");
 
 const serv = @import("server.zig");
 
-pub fn Event(comptime name: [*:0]const u8, comptime T: type) type {
+fn Event(comptime name: []const u8, comptime T: type) type {
     return struct {
         wl_listener: wl.Listener(*T) = wl.Listener(*T).init(call),
-        listener: ?*const fn (data: *T) void,
+        listener: ?*const fn (server: *serv.Server, data: *T) void = null,
 
         fn call(listener: *wl.Listener(*T), data: *T) void {
             const self = @fieldParentPtr(Event(name, T), "wl_listener", listener);
-            std.log.debug("calling event {}", .{name});
+            const server = @fieldParentPtr(Events, name, self).server;
+            std.log.debug("calling event {s}", .{name});
             if (self.listener) |l| {
-                l(data);
+                l(server, data);
             }
             // TODO: call the lua event listener
         }
@@ -21,9 +22,12 @@ pub fn Event(comptime name: [*:0]const u8, comptime T: type) type {
 }
 
 pub const Events = struct {
-    new_output: Event("new_output", wlr.Output),
+    server: *serv.Server,
 
-    pub fn init(self: Events, server: serv.Server) void {
+    new_output: Event("new_output", wlr.Output) = .{},
+
+    pub fn init(self: *Events, server: *serv.Server) void {
+        self.* = .{ .server = server };
         server.backend.events.new_output.add(&self.new_output.wl_listener);
     }
 };
