@@ -81,6 +81,8 @@
                   if inShell
                   then [
                     zls-overlay.packages.${system}.default
+                    valgrind
+                    gdb
                   ]
                   else []
                 );

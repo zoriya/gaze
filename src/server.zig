@@ -20,6 +20,7 @@ pub const Server = struct {
     cursor: *wlr.Cursor,
     cursor_mgr: *wlr.XcursorManager,
 
+    socket: [:0]const u8,
     events: events.Events,
 
     pub fn init(self: *Server) !void {
@@ -28,6 +29,8 @@ pub const Server = struct {
         const renderer = try wlr.Renderer.autocreate(backend);
         const output_layout = try wlr.OutputLayout.create();
         const scene = try wlr.Scene.create();
+
+        var buf: [11]u8 = undefined;
 
         self.* = Server{
             .wl_server = wl_server,
@@ -42,6 +45,7 @@ pub const Server = struct {
             .cursor = try wlr.Cursor.create(),
             .cursor_mgr = try wlr.XcursorManager.create(null, 24),
             .events = undefined,
+            .socket = try wl_server.addSocketAuto(&buf),
         };
         errdefer self.destroy();
 
