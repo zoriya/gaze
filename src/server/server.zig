@@ -5,6 +5,7 @@ const wlr = @import("wlroots");
 
 const events = @import("../event.zig");
 const Output = @import("output.zig").Output;
+const Keyboard = @import("keyboard.zig").Keyboard;
 
 const gpa = std.heap.c_allocator;
 
@@ -64,6 +65,21 @@ pub const Server = struct {
 
     fn attach_events(self: *Server) void {
         self.events.new_output.listener = &Output.onNewOutput;
+        self.events.new_input.listener = &onNewInput;
+    }
+
+    fn onNewInput(self: *Server, device: *wlr.InputDevice) void {
+        switch (device.type) {
+            .keyboard => Keyboard.onNewKeyboard(self, device),
+            .pointer => self.cursor.attachInputDevice(device),
+            else => {},
+        }
+
+        // TODO: handle capabilities in a flexible way (allow touch, pointer or/and keyborads)
+        self.seat.setCapabilities(.{
+            .pointer = true,
+            .keyboard = true,
+        });
     }
 
     pub fn destroy(self: *Server) void {
