@@ -2,7 +2,7 @@ const std = @import("std");
 const wl = @import("wayland").server.wl;
 const wlr = @import("wlroots");
 
-const serv = @import("server.zig");
+const serv = @import("server/server.zig");
 
 fn Event(comptime name: []const u8, comptime T: type) type {
     return struct {

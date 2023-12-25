@@ -4,7 +4,7 @@ const builtin = @import("builtin");
 const wl = @import("wayland").server.wl;
 const wlr = @import("wlroots");
 
-const Server = @import("server.zig").Server;
+const Server = @import("server/server.zig").Server;
 const commands = @import("commands.zig");
 
 pub fn main() anyerror!void {
