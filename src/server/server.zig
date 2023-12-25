@@ -1,4 +1,5 @@
 const std = @import("std");
+const gpa = std.heap.c_allocator;
 
 const wl = @import("wayland").server.wl;
 const wlr = @import("wlroots");
@@ -6,8 +7,8 @@ const wlr = @import("wlroots");
 const events = @import("../event.zig");
 const Output = @import("output.zig").Output;
 const Keyboard = @import("keyboard.zig").Keyboard;
+const Cursor = @import("cursor.zig").Cursor;
 
-const gpa = std.heap.c_allocator;
 
 pub const Server = struct {
     wl_server: *wl.Server,
@@ -19,8 +20,8 @@ pub const Server = struct {
     scene_output_layout: *wlr.SceneOutputLayout,
     xdg_shell: *wlr.XdgShell,
     seat: *wlr.Seat,
-    cursor: *wlr.Cursor,
-    cursor_mgr: *wlr.XcursorManager,
+
+    cursor: *Cursor,
 
     socket: [:0]const u8,
     events: events.Events,
@@ -44,10 +45,9 @@ pub const Server = struct {
             .scene_output_layout = try scene.attachOutputLayout(output_layout),
             .xdg_shell = try wlr.XdgShell.create(wl_server, 2),
             .seat = try wlr.Seat.create(wl_server, "default"),
-            .cursor = try wlr.Cursor.create(),
-            .cursor_mgr = try wlr.XcursorManager.create(null, 24),
             .events = undefined,
             .socket = try wl_server.addSocketAuto(&buf),
+            .cursor = try Cursor.create(self),
         };
         errdefer self.destroy();
 
@@ -58,9 +58,6 @@ pub const Server = struct {
 
         self.events.init(self);
         self.attach_events();
-
-        self.cursor.attachOutputLayout(self.output_layout);
-        try self.cursor_mgr.load(1);
     }
 
     fn attach_events(self: *Server) void {
@@ -71,7 +68,7 @@ pub const Server = struct {
     fn onNewInput(self: *Server, device: *wlr.InputDevice) void {
         switch (device.type) {
             .keyboard => Keyboard.onNewKeyboard(self, device),
-            .pointer => self.cursor.attachInputDevice(device),
+            .pointer => self.cursor.onNewPointer(device),
             else => {},
         }
 
@@ -83,6 +80,7 @@ pub const Server = struct {
     }
 
     pub fn destroy(self: *Server) void {
+        self.cursor.destroy();
         self.wl_server.destroyClients();
         self.wl_server.destroy();
     }
