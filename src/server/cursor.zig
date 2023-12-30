@@ -21,7 +21,7 @@ pub const Cursor = struct {
         self.cursor.attachInputDevice(device);
     }
 
-    pub fn create(server: *Server) !*Cursor {
+    pub fn create(server: *Server, output_layout: *wlr.OutputLayout) !*Cursor {
         const self = try gpa.create(Cursor);
         errdefer gpa.destroy(self);
         self.* = .{
@@ -30,7 +30,7 @@ pub const Cursor = struct {
             .cursor_mgr = try wlr.XcursorManager.create(null, 24),
         };
 
-        self.cursor.attachOutputLayout(server.output_layout);
+        self.cursor.attachOutputLayout(output_layout);
         try self.cursor_mgr.load(1);
 
         self.cursor.events.motion.add(&self.motion);

@@ -50,7 +50,7 @@ pub const Server = struct {
             .seat = try wlr.Seat.create(wl_server, "default"),
             .events = undefined,
             .socket = try wl_server.addSocketAuto(&buf),
-            .cursor = try Cursor.create(self),
+            .cursor = try Cursor.create(self, output_layout),
         };
         errdefer self.destroy();
 
