@@ -10,6 +10,9 @@ const Client = @import("client.zig").Client;
 const Keyboard = @import("keyboard.zig").Keyboard;
 const Cursor = @import("cursor.zig").Cursor;
 
+// This needs to outlive server's socket value.
+var socket_buf: [11]u8 = undefined;
+
 pub const Server = struct {
     wl_server: *wl.Server,
     backend: *wlr.Backend,
@@ -36,8 +39,6 @@ pub const Server = struct {
         const output_layout = try wlr.OutputLayout.create();
         const scene = try wlr.Scene.create();
 
-        var buf: [11]u8 = undefined;
-
         self.* = Server{
             .wl_server = wl_server,
             .backend = backend,
@@ -48,9 +49,9 @@ pub const Server = struct {
             .scene_output_layout = try scene.attachOutputLayout(output_layout),
             .xdg_shell = try wlr.XdgShell.create(wl_server, 2),
             .seat = try wlr.Seat.create(wl_server, "default"),
-            .events = undefined,
-            .socket = try wl_server.addSocketAuto(&buf),
             .cursor = try Cursor.create(self, output_layout),
+            .events = undefined,
+            .socket = try wl_server.addSocketAuto(&socket_buf),
         };
         errdefer self.destroy();
 
