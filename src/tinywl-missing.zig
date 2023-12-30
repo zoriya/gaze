@@ -46,7 +46,7 @@ const Server = struct {
     // new_output: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(newOutput),
 
     xdg_shell: *wlr.XdgShell,
-    new_xdg_surface: wl.Listener(*wlr.XdgSurface) = wl.Listener(*wlr.XdgSurface).init(newXdgSurface),
+    // new_xdg_surface: wl.Listener(*wlr.XdgSurface) = wl.Listener(*wlr.XdgSurface).init(newXdgSurface),
     views: wl.list.Head(View, .link) = undefined,
 
     seat: *wlr.Seat,
@@ -98,7 +98,7 @@ const Server = struct {
 
         // server.backend.events.new_output.add(&server.new_output);
 
-        server.xdg_shell.events.new_surface.add(&server.new_xdg_surface);
+        // server.xdg_shell.events.new_surface.add(&server.new_xdg_surface);
         server.views.init();
 
         // server.backend.events.new_input.add(&server.new_input);
@@ -142,7 +142,7 @@ const Server = struct {
     // }
 
     fn newXdgSurface(listener: *wl.Listener(*wlr.XdgSurface), xdg_surface: *wlr.XdgSurface) void {
-        const server = @fieldParentPtr(Server, "new_xdg_surface", listener);
+        // const server = @fieldParentPtr(Server, "new_xdg_surface", listener);
 
         switch (xdg_surface.role) {
             .toplevel => {
@@ -152,21 +152,21 @@ const Server = struct {
                     return;
                 };
 
-                view.* = .{
-                    .server = server,
-                    .xdg_surface = xdg_surface,
-                    .scene_tree = server.scene.tree.createSceneXdgSurface(xdg_surface) catch {
-                        gpa.destroy(view);
-                        std.log.err("failed to allocate new view", .{});
-                        return;
-                    },
-                };
-                view.scene_tree.node.data = @intFromPtr(view);
-                xdg_surface.data = @intFromPtr(view.scene_tree);
-
-                xdg_surface.surface.events.map.add(&view.map);
-                xdg_surface.surface.events.unmap.add(&view.unmap);
-                xdg_surface.events.destroy.add(&view.destroy);
+                // view.* = .{
+                //     .server = server,
+                //     .xdg_surface = xdg_surface,
+                //     .scene_tree = server.scene.tree.createSceneXdgSurface(xdg_surface) catch {
+                //         gpa.destroy(view);
+                //         std.log.err("failed to allocate new view", .{});
+                //         return;
+                //     },
+                // };
+                // view.scene_tree.node.data = @intFromPtr(view);
+                // xdg_surface.data = @intFromPtr(view.scene_tree);
+                //
+                // xdg_surface.surface.events.map.add(&view.map);
+                // xdg_surface.surface.events.unmap.add(&view.unmap);
+                // xdg_surface.events.destroy.add(&view.destroy);
                 xdg_surface.role_data.toplevel.?.events.request_move.add(&view.request_move);
                 xdg_surface.role_data.toplevel.?.events.request_resize.add(&view.request_resize);
             },
@@ -465,34 +465,34 @@ const View = struct {
     x: i32 = 0,
     y: i32 = 0,
 
-    map: wl.Listener(void) = wl.Listener(void).init(map),
-    unmap: wl.Listener(void) = wl.Listener(void).init(unmap),
-    destroy: wl.Listener(void) = wl.Listener(void).init(destroy),
+    // map: wl.Listener(void) = wl.Listener(void).init(map),
+    // unmap: wl.Listener(void) = wl.Listener(void).init(unmap),
+    // destroy: wl.Listener(void) = wl.Listener(void).init(destroy),
     request_move: wl.Listener(*wlr.XdgToplevel.event.Move) = wl.Listener(*wlr.XdgToplevel.event.Move).init(requestMove),
     request_resize: wl.Listener(*wlr.XdgToplevel.event.Resize) = wl.Listener(*wlr.XdgToplevel.event.Resize).init(requestResize),
 
-    fn map(listener: *wl.Listener(void)) void {
-        const view = @fieldParentPtr(View, "map", listener);
-        view.server.views.prepend(view);
-        view.server.focusView(view, view.xdg_surface.surface);
-    }
+    // fn map(listener: *wl.Listener(void)) void {
+    //     const view = @fieldParentPtr(View, "map", listener);
+    //     view.server.views.prepend(view);
+    //     view.server.focusView(view, view.xdg_surface.surface);
+    // }
 
-    fn unmap(listener: *wl.Listener(void)) void {
-        const view = @fieldParentPtr(View, "unmap", listener);
-        view.link.remove();
-    }
+    // fn unmap(listener: *wl.Listener(void)) void {
+    //     const view = @fieldParentPtr(View, "unmap", listener);
+    //     view.link.remove();
+    // }
 
-    fn destroy(listener: *wl.Listener(void)) void {
-        const view = @fieldParentPtr(View, "destroy", listener);
-
-        view.map.link.remove();
-        view.unmap.link.remove();
-        view.destroy.link.remove();
-        view.request_move.link.remove();
-        view.request_resize.link.remove();
-
-        gpa.destroy(view);
-    }
+    // fn destroy(listener: *wl.Listener(void)) void {
+    //     const view = @fieldParentPtr(View, "destroy", listener);
+    //
+    //     view.map.link.remove();
+    //     view.unmap.link.remove();
+    //     view.destroy.link.remove();
+    //     view.request_move.link.remove();
+    //     view.request_resize.link.remove();
+    //
+    //     gpa.destroy(view);
+    // }
 
     fn requestMove(
         listener: *wl.Listener(*wlr.XdgToplevel.event.Move),

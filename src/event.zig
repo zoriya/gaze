@@ -26,10 +26,12 @@ pub const Events = struct {
 
     new_monitor: Event("new_monitor", wlr.Output) = .{},
     new_input: Event("new_input", wlr.InputDevice) = .{},
+    new_xdg_surface: Event("new_xdg_surface", wlr.XdgSurface) = .{},
 
     pub fn init(self: *Events, server: *serv.Server) void {
         self.* = .{ .server = server };
         server.backend.events.new_output.add(&self.new_monitor.wl_listener);
         server.backend.events.new_input.add(&self.new_input.wl_listener);
+        server.xdg_shell.events.new_surface.add(&self.new_xdg_surface.wl_listener);
     }
 };

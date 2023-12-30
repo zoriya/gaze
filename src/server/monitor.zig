@@ -43,6 +43,7 @@ pub const Monitor = struct {
         errdefer wlr_output.destroy();
 
         const self = try gpa.create(Monitor);
+        errdefer gpa.destroy(self);
         self.* = .{
             .server = server,
             .wlr_output = wlr_output,
