@@ -26,6 +26,8 @@ pub const Server = struct {
     socket: [:0]const u8,
     events: events.Events,
 
+    monitors: wl.list.Head(Monitor, .link) = undefined,
+
     pub fn init(self: *Server) !void {
         const wl_server = try wl.Server.create();
         const backend = try wlr.Backend.autocreate(wl_server, null);
@@ -50,6 +52,8 @@ pub const Server = struct {
             .cursor = try Cursor.create(self),
         };
         errdefer self.destroy();
+
+        self.monitors.init();
 
         try self.renderer.initServer(self.wl_server);
         _ = try wlr.Compositor.create(self.wl_server, 6, self.renderer);

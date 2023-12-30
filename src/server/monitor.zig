@@ -10,12 +10,13 @@ const gpa = std.heap.c_allocator;
 pub const Monitor = struct {
     server: *Server,
     wlr_output: *wlr.Output,
+    link: wl.list.Link = undefined,
 
-    frame: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(frame),
-    request_state: wl.Listener(*wlr.Output.event.RequestState) =
-        wl.Listener(*wlr.Output.event.RequestState).init(request_state),
+    frame_l: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(onFrame),
+    request_state_l: wl.Listener(*wlr.Output.event.RequestState) =
+        wl.Listener(*wlr.Output.event.RequestState).init(onRequestState),
     // TODO: replace that with an Event for lua events support
-    destroy: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(destroy),
+    destroy_l: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(onDestroy),
 
     pub fn onNewOutput(server: *Server, wlr_output: *wlr.Output) void {
         if (!wlr_output.initRender(server.allocator, server.renderer)) return;
@@ -29,10 +30,11 @@ pub const Monitor = struct {
         }
         if (!wlr_output.commitState(&state)) return;
 
-        _ = create(server, wlr_output) catch {
+        const mon = create(server, wlr_output) catch {
             std.log.err("failed to allocate new output", .{});
             return;
         };
+        server.monitors.append(mon);
     }
 
     /// Ouput takes ownership of of the wlr_output. If create fail, Ouput will
@@ -45,9 +47,9 @@ pub const Monitor = struct {
             .server = server,
             .wlr_output = wlr_output,
         };
-        wlr_output.events.frame.add(&self.frame);
-        wlr_output.events.request_state.add(&self.request_state);
-        wlr_output.events.destroy.add(&self.destroy);
+        wlr_output.events.frame.add(&self.frame_l);
+        wlr_output.events.request_state.add(&self.request_state_l);
+        wlr_output.events.destroy.add(&self.destroy_l);
 
         const layout_output = try server.output_layout.addAuto(wlr_output);
         const scene_output = try server.scene.createSceneOutput(wlr_output);
@@ -55,18 +57,23 @@ pub const Monitor = struct {
         return self;
     }
 
-    fn destroy(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
-        const output = @fieldParentPtr(Monitor, "destroy", listener);
+    fn destroy(self: *Monitor) void {
+        self.link.remove();
 
-        output.frame.link.remove();
-        output.request_state.link.remove();
-        output.destroy.link.remove();
+        self.frame_l.link.remove();
+        self.request_state_l.link.remove();
+        self.destroy_l.link.remove();
 
-        gpa.destroy(output);
+        gpa.destroy(self);
     }
 
-    fn frame(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
-        const output = @fieldParentPtr(Monitor, "frame", listener);
+    fn onDestroy(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
+        const self = @fieldParentPtr(Monitor, "destroy_l", listener);
+        self.destroy();
+    }
+
+    fn onFrame(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
+        const output = @fieldParentPtr(Monitor, "frame_l", listener);
 
         const scene_output = output.server.scene.getSceneOutput(output.wlr_output).?;
         _ = scene_output.commit(null);
@@ -76,11 +83,11 @@ pub const Monitor = struct {
         scene_output.sendFrameDone(&now);
     }
 
-    fn request_state(
+    fn onRequestState(
         listener: *wl.Listener(*wlr.Output.event.RequestState),
         event: *wlr.Output.event.RequestState,
     ) void {
-        const output = @fieldParentPtr(Monitor, "request_state", listener);
+        const output = @fieldParentPtr(Monitor, "request_state_l", listener);
 
         _ = output.wlr_output.commitState(event.state);
     }
