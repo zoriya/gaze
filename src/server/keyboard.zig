@@ -56,7 +56,6 @@ pub const Keyboard = struct {
 
     fn key(listener: *wl.Listener(*wlr.Keyboard.event.Key), event: *wlr.Keyboard.event.Key) void {
         const keyboard = @fieldParentPtr(Keyboard, "key", listener);
-        const wlr_keyboard = keyboard.device.toKeyboard();
 
         // TODO: Actually handle keybinds in gaze. Bellow is what was used in tinywl.
         // // Translate libinput keycode -> xkbcommon
@@ -69,7 +68,7 @@ pub const Keyboard = struct {
         //     }
         // }
 
-        keyboard.server.seat.setKeyboard(wlr_keyboard);
+        keyboard.server.seat.setKeyboard(keyboard.device);
         keyboard.server.seat.keyboardNotifyKey(event.time_msec, event.keycode, event.state);
     }
 };
