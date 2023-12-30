@@ -24,12 +24,12 @@ fn Event(comptime name: []const u8, comptime T: type) type {
 pub const Events = struct {
     server: *serv.Server,
 
-    new_output: Event("new_output", wlr.Output) = .{},
+    new_monitor: Event("new_monitor", wlr.Output) = .{},
     new_input: Event("new_input", wlr.InputDevice) = .{},
 
     pub fn init(self: *Events, server: *serv.Server) void {
         self.* = .{ .server = server };
-        server.backend.events.new_output.add(&self.new_output.wl_listener);
+        server.backend.events.new_output.add(&self.new_monitor.wl_listener);
         server.backend.events.new_input.add(&self.new_input.wl_listener);
     }
 };

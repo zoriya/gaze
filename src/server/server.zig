@@ -5,7 +5,7 @@ const wl = @import("wayland").server.wl;
 const wlr = @import("wlroots");
 
 const events = @import("../event.zig");
-const Output = @import("output.zig").Output;
+const Monitor = @import("monitor.zig").Monitor;
 const Keyboard = @import("keyboard.zig").Keyboard;
 const Cursor = @import("cursor.zig").Cursor;
 
@@ -61,7 +61,7 @@ pub const Server = struct {
     }
 
     fn attach_events(self: *Server) void {
-        self.events.new_output.listener = &Output.onNewOutput;
+        self.events.new_monitor.listener = &Monitor.onNewOutput;
         self.events.new_input.listener = &onNewInput;
     }
 

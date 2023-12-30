@@ -7,7 +7,7 @@ const wlr = @import("wlroots");
 
 const gpa = std.heap.c_allocator;
 
-pub const Output = struct {
+pub const Monitor = struct {
     server: *Server,
     wlr_output: *wlr.Output,
 
@@ -37,10 +37,10 @@ pub const Output = struct {
 
     /// Ouput takes ownership of of the wlr_output. If create fail, Ouput will
     /// destroy the wlr.Ouput.
-    fn create(server: *Server, wlr_output: *wlr.Output) !*Output {
+    fn create(server: *Server, wlr_output: *wlr.Output) !*Monitor {
         errdefer wlr_output.destroy();
 
-        const self = try gpa.create(Output);
+        const self = try gpa.create(Monitor);
         self.* = .{
             .server = server,
             .wlr_output = wlr_output,
@@ -56,7 +56,7 @@ pub const Output = struct {
     }
 
     fn destroy(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
-        const output = @fieldParentPtr(Output, "destroy", listener);
+        const output = @fieldParentPtr(Monitor, "destroy", listener);
 
         output.frame.link.remove();
         output.request_state.link.remove();
@@ -66,7 +66,7 @@ pub const Output = struct {
     }
 
     fn frame(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
-        const output = @fieldParentPtr(Output, "frame", listener);
+        const output = @fieldParentPtr(Monitor, "frame", listener);
 
         const scene_output = output.server.scene.getSceneOutput(output.wlr_output).?;
         _ = scene_output.commit(null);
@@ -80,7 +80,7 @@ pub const Output = struct {
         listener: *wl.Listener(*wlr.Output.event.RequestState),
         event: *wlr.Output.event.RequestState,
     ) void {
-        const output = @fieldParentPtr(Output, "request_state", listener);
+        const output = @fieldParentPtr(Monitor, "request_state", listener);
 
         _ = output.wlr_output.commitState(event.state);
     }
