@@ -218,28 +218,28 @@ const Server = struct {
         return null;
     }
 
-    fn focusView(server: *Server, view: *View, surface: *wlr.Surface) void {
-        if (server.seat.keyboard_state.focused_surface) |previous_surface| {
-            if (previous_surface == surface) return;
-            if (wlr.XdgSurface.tryFromWlrSurface(previous_surface)) |xdg_surface| {
-                _ = xdg_surface.role_data.toplevel.?.setActivated(false);
-            }
-        }
-
-        view.scene_tree.node.raiseToTop();
-        view.link.remove();
-        server.views.prepend(view);
-
-        _ = view.xdg_surface.role_data.toplevel.?.setActivated(true);
-
-        const wlr_keyboard = server.seat.getKeyboard() orelse return;
-        server.seat.keyboardNotifyEnter(
-            surface,
-            &wlr_keyboard.keycodes,
-            wlr_keyboard.num_keycodes,
-            &wlr_keyboard.modifiers,
-        );
-    }
+    // fn focusView(server: *Server, view: *View, surface: *wlr.Surface) void {
+    //     if (server.seat.keyboard_state.focused_surface) |previous_surface| {
+    //         if (previous_surface == surface) return;
+    //         if (wlr.XdgSurface.tryFromWlrSurface(previous_surface)) |xdg_surface| {
+    //             _ = xdg_surface.role_data.toplevel.?.setActivated(false);
+    //         }
+    //     }
+    //
+    //     view.scene_tree.node.raiseToTop();
+    //     view.link.remove();
+    //     server.views.prepend(view);
+    //
+    //     _ = view.xdg_surface.role_data.toplevel.?.setActivated(true);
+    //
+    //     const wlr_keyboard = server.seat.getKeyboard() orelse return;
+    //     server.seat.keyboardNotifyEnter(
+    //         surface,
+    //         &wlr_keyboard.keycodes,
+    //         wlr_keyboard.num_keycodes,
+    //         &wlr_keyboard.modifiers,
+    //     );
+    // }
 
     // fn newInput(listener: *wl.Listener(*wlr.InputDevice), device: *wlr.InputDevice) void {
     //     const server = @fieldParentPtr(Server, "new_input", listener);
