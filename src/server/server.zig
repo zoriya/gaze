@@ -38,6 +38,7 @@ pub const Server = struct {
         const renderer = try wlr.Renderer.autocreate(backend);
         const output_layout = try wlr.OutputLayout.create();
         const scene = try wlr.Scene.create();
+        const seat = try wlr.Seat.create(wl_server, "default");
 
         self.* = Server{
             .wl_server = wl_server,
@@ -48,8 +49,8 @@ pub const Server = struct {
             .output_layout = output_layout,
             .scene_output_layout = try scene.attachOutputLayout(output_layout),
             .xdg_shell = try wlr.XdgShell.create(wl_server, 2),
-            .seat = try wlr.Seat.create(wl_server, "default"),
-            .cursor = try Cursor.create(self, output_layout),
+            .seat = seat,
+            .cursor = try Cursor.create(self, output_layout, seat),
             .events = undefined,
             .socket = try wl_server.addSocketAuto(&socket_buf),
         };

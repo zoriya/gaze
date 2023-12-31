@@ -51,8 +51,8 @@ const Server = struct {
 
     seat: *wlr.Seat,
     // new_input: wl.Listener(*wlr.InputDevice) = wl.Listener(*wlr.InputDevice).init(newInput),
-    request_set_cursor: wl.Listener(*wlr.Seat.event.RequestSetCursor) = wl.Listener(*wlr.Seat.event.RequestSetCursor).init(requestSetCursor),
-    request_set_selection: wl.Listener(*wlr.Seat.event.RequestSetSelection) = wl.Listener(*wlr.Seat.event.RequestSetSelection).init(requestSetSelection),
+    // request_set_cursor: wl.Listener(*wlr.Seat.event.RequestSetCursor) = wl.Listener(*wlr.Seat.event.RequestSetCursor).init(requestSetCursor),
+    // request_set_selection: wl.Listener(*wlr.Seat.event.RequestSetSelection) = wl.Listener(*wlr.Seat.event.RequestSetSelection).init(requestSetSelection),
     // keyboards: wl.list.Head(Keyboard, .link) = undefined,
 
     // cursor: *wlr.Cursor,
@@ -99,11 +99,11 @@ const Server = struct {
         // server.backend.events.new_output.add(&server.new_output);
 
         // server.xdg_shell.events.new_surface.add(&server.new_xdg_surface);
-        server.views.init();
+        // server.views.init();
 
         // server.backend.events.new_input.add(&server.new_input);
-        server.seat.events.request_set_cursor.add(&server.request_set_cursor);
-        server.seat.events.request_set_selection.add(&server.request_set_selection);
+        // server.seat.events.request_set_cursor.add(&server.request_set_cursor);
+        // server.seat.events.request_set_selection.add(&server.request_set_selection);
         server.keyboards.init();
 
         // server.cursor.attachOutputLayout(server.output_layout);
@@ -188,35 +188,35 @@ const Server = struct {
         }
     }
 
-    const ViewAtResult = struct {
-        view: *View,
-        surface: *wlr.Surface,
-        sx: f64,
-        sy: f64,
-    };
+    // const ViewAtResult = struct {
+    //     view: *View,
+    //     surface: *wlr.Surface,
+    //     sx: f64,
+    //     sy: f64,
+    // };
 
-    fn viewAt(server: *Server, lx: f64, ly: f64) ?ViewAtResult {
-        var sx: f64 = undefined;
-        var sy: f64 = undefined;
-        if (server.scene.tree.node.at(lx, ly, &sx, &sy)) |node| {
-            if (node.type != .buffer) return null;
-            const scene_buffer = wlr.SceneBuffer.fromNode(node);
-            const scene_surface = wlr.SceneSurface.tryFromBuffer(scene_buffer) orelse return null;
-
-            var it: ?*wlr.SceneTree = node.parent;
-            while (it) |n| : (it = n.node.parent) {
-                if (@as(?*View, @ptrFromInt(n.node.data))) |view| {
-                    return ViewAtResult{
-                        .view = view,
-                        .surface = scene_surface.surface,
-                        .sx = sx,
-                        .sy = sy,
-                    };
-                }
-            }
-        }
-        return null;
-    }
+    // fn viewAt(server: *Server, lx: f64, ly: f64) ?ViewAtResult {
+    //     var sx: f64 = undefined;
+    //     var sy: f64 = undefined;
+    //     if (server.scene.tree.node.at(lx, ly, &sx, &sy)) |node| {
+    //         if (node.type != .buffer) return null;
+    //         const scene_buffer = wlr.SceneBuffer.fromNode(node);
+    //         const scene_surface = wlr.SceneSurface.tryFromBuffer(scene_buffer) orelse return null;
+    //
+    //         var it: ?*wlr.SceneTree = node.parent;
+    //         while (it) |n| : (it = n.node.parent) {
+    //             if (@as(?*View, @ptrFromInt(n.node.data))) |view| {
+    //                 return ViewAtResult{
+    //                     .view = view,
+    //                     .surface = scene_surface.surface,
+    //                     .sx = sx,
+    //                     .sy = sy,
+    //                 };
+    //             }
+    //         }
+    //     }
+    //     return null;
+    // }
 
     // fn focusView(server: *Server, view: *View, surface: *wlr.Surface) void {
     //     if (server.seat.keyboard_state.focused_surface) |previous_surface| {
@@ -258,22 +258,22 @@ const Server = struct {
     //     });
     // }
 
-    fn requestSetCursor(
-        listener: *wl.Listener(*wlr.Seat.event.RequestSetCursor),
-        event: *wlr.Seat.event.RequestSetCursor,
-    ) void {
-        const server = @fieldParentPtr(Server, "request_set_cursor", listener);
-        if (event.seat_client == server.seat.pointer_state.focused_client)
-            server.cursor.setSurface(event.surface, event.hotspot_x, event.hotspot_y);
-    }
+    // fn requestSetCursor(
+    //     listener: *wl.Listener(*wlr.Seat.event.RequestSetCursor),
+    //     event: *wlr.Seat.event.RequestSetCursor,
+    // ) void {
+    //     const server = @fieldParentPtr(Server, "request_set_cursor", listener);
+    //     if (event.seat_client == server.seat.pointer_state.focused_client)
+    //         server.cursor.setSurface(event.surface, event.hotspot_x, event.hotspot_y);
+    // }
 
-    fn requestSetSelection(
-        listener: *wl.Listener(*wlr.Seat.event.RequestSetSelection),
-        event: *wlr.Seat.event.RequestSetSelection,
-    ) void {
-        const server = @fieldParentPtr(Server, "request_set_selection", listener);
-        server.seat.setSelection(event.source, event.serial);
-    }
+    // fn requestSetSelection(
+    //     listener: *wl.Listener(*wlr.Seat.event.RequestSetSelection),
+    //     event: *wlr.Seat.event.RequestSetSelection,
+    // ) void {
+    //     const server = @fieldParentPtr(Server, "request_set_selection", listener);
+    //     server.seat.setSelection(event.source, event.serial);
+    // }
 
     // fn cursorMotion(
     //     listener: *wl.Listener(*wlr.Pointer.event.Motion),
@@ -295,13 +295,13 @@ const Server = struct {
 
     fn processCursorMotion(server: *Server, time_msec: u32) void {
         switch (server.cursor_mode) {
-            .passthrough => if (server.viewAt(server.cursor.x, server.cursor.y)) |res| {
-                server.seat.pointerNotifyEnter(res.surface, res.sx, res.sy);
-                server.seat.pointerNotifyMotion(time_msec, res.sx, res.sy);
-            } else {
-                server.cursor.setXcursor(server.cursor_mgr, "default");
-                server.seat.pointerClearFocus();
-            },
+            // .passthrough => if (server.viewAt(server.cursor.x, server.cursor.y)) |res| {
+            //     server.seat.pointerNotifyEnter(res.surface, res.sx, res.sy);
+            //     server.seat.pointerNotifyMotion(time_msec, res.sx, res.sy);
+            // } else {
+            //     server.cursor.setXcursor(server.cursor_mgr, "default");
+            //     server.seat.pointerClearFocus();
+            // },
             .move => {
                 const view = server.grabbed_view.?;
                 view.x = @as(i32, @intFromFloat(server.cursor.x - server.grab_x));
