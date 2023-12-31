@@ -88,13 +88,24 @@ pub const Server = struct {
         });
     }
 
-    fn onNewSurface(self: *Server, surface: *wlr.XdgSurface) void {
-        switch (surface.role) {
-            .toplevel => Client.create(self, surface) catch {
+    fn onNewSurface(self: *Server, xdg_surface: *wlr.XdgSurface) void {
+        switch (xdg_surface.role) {
+            .toplevel => Client.create(self, xdg_surface) catch {
                 std.log.err("Couldn't create a client", .{});
             },
             .popup => {
-                // TODO: implement popupus
+                // These asserts are fine since tinywl.zig doesn't support anything else that can
+                // make xdg popups (e.g. layer shell).
+                const parent = wlr.XdgSurface.tryFromWlrSurface(xdg_surface.role_data.popup.?.parent.?) orelse return;
+                const parent_tree = @as(?*wlr.SceneTree, @ptrFromInt(parent.data)) orelse {
+                    // The xdg surface user data could be left null due to allocation failure.
+                    return;
+                };
+                const scene_tree = parent_tree.createSceneXdgSurface(xdg_surface) catch {
+                    std.log.err("failed to allocate xdg popup node", .{});
+                    return;
+                };
+                xdg_surface.data = @intFromPtr(scene_tree);
             },
             .none => unreachable,
         }

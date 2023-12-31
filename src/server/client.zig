@@ -28,7 +28,7 @@ pub const Client = struct {
             .scene_tree = try server.scene.tree.createSceneXdgSurface(xdg_surface),
         };
         self.scene_tree.node.data = @intFromPtr(self);
-        xdg_surface.data = @intFromPtr(self);
+        xdg_surface.data = @intFromPtr(self.scene_tree);
 
         xdg_surface.surface.events.map.add(&self.map_l);
         xdg_surface.surface.events.unmap.add(&self.unmap_l);
