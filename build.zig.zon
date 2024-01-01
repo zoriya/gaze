@@ -1,0 +1,11 @@
+.{
+    .name = "gaze",
+    .version = "0.0.1",
+    .paths = .{""},
+    .dependencies = .{
+        .ziglua = .{
+            .url = "https://github.com/natecraddock/ziglua/archive/8cd91ec9de5c206ae4e37034127d8972758dc55c.tar.gz",
+            .hash = "12205d977da825e681a09048180700bb4cc00bbeb417e8ff5c5fe59cb76189ffa592",
+        },
+    },
+}

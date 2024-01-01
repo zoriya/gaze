@@ -36,7 +36,7 @@ pub fn focus(server: *Server, client: *Client) !void {
 }
 
 pub const ClientAtResult = struct {
-    view: *Client,
+    client: *Client,
     surface: *wlr.Surface,
     x: f64,
     y: f64,
@@ -53,7 +53,7 @@ pub fn clientAt(server: *Server, lx: f64, ly: f64) ?ClientAtResult {
         while (it) |n| : (it = n.node.parent) {
             if (@as(?*Client, @ptrFromInt(n.node.data))) |client| {
                 return ClientAtResult{
-                    .view = client,
+                    .client = client,
                     .surface = scene_surface.surface,
                     .x = sx,
                     .y = sy,

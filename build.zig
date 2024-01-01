@@ -25,6 +25,11 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    const ziglua = b.dependency("ziglua", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     // These must be manually kept in sync with the versions wlroots supports
     // until wlroots gives the option to request a specific version.
     scanner.generate("wl_compositor", 4);
@@ -56,6 +61,9 @@ pub fn build(b: *std.Build) void {
     gaze.addModule("wlroots", wlroots);
     gaze.linkSystemLibrary("wlroots");
     gaze.linkSystemLibrary("pixman-1");
+
+    gaze.addModule("ziglua", ziglua.module("ziglua"));
+    gaze.linkLibrary(ziglua.artifact("lua"));
 
     b.installArtifact(gaze);
 }

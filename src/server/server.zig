@@ -40,7 +40,7 @@ pub const Server = struct {
         const scene = try wlr.Scene.create();
         const seat = try wlr.Seat.create(wl_server, "default");
 
-        self.* = Server{
+        self.* = .{
             .wl_server = wl_server,
             .backend = backend,
             .renderer = renderer,
