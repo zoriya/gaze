@@ -8,21 +8,11 @@
 
     zls-overlay.url = "github:zigtools/zls";
     zls-overlay.inputs.nixpkgs.follows = "nixpkgs";
-
-    wlroots-src = {
-      type = "gitlab";
-      host = "gitlab.freedesktop.org";
-      owner = "wlroots";
-      repo = "wlroots";
-      ref = "refs/tags/0.17.0";
-      flake = false;
-    };
   };
 
   outputs = {
     self,
     nixpkgs,
-    wlroots-src,
     zig-overlay,
     zls-overlay,
   }: let
@@ -40,19 +30,7 @@
       });
   in {
     overlay = final: prev:
-      with final; rec {
-        wlroots = prev.wlroots.overrideAttrs (old: {
-          version = wlroots-src.shortRev or "dirty";
-          src = wlroots-src;
-          buildInputs =
-            old.buildInputs
-            ++ [
-              hwdata
-              libliftoff
-              libdisplay-info
-            ];
-        });
-
+      with final; {
         gaze = with final;
           final.callPackage ({inShell ? false}:
             stdenv.mkDerivation rec {
@@ -66,8 +44,8 @@
 
               buildInputs =
                 [
-                  zig-overlay.packages.${system}.master
-                  wlroots
+                  zig-overlay.packages.${system}.master-2024-01-02
+                  wlroots_0_17
                   libGL
                   libevdev
                   libinput
