@@ -10,8 +10,9 @@ fn Event(comptime name: []const u8, comptime T: type) type {
         listener: ?*const fn (server: *serv.Server, data: *T) void = null,
 
         fn call(listener: *wl.Listener(*T), data: *T) void {
-            const self = @fieldParentPtr(Event(name, T), "wl_listener", listener);
-            const server = @fieldParentPtr(Events, name, self).server;
+            const self: *Event(name, T) = @fieldParentPtr("wl_listener", listener);
+            const events: *Events = @fieldParentPtr(name, self);
+            const server = events.server;
             std.log.debug("calling event {s}", .{name});
             if (self.listener) |l| {
                 l(server, data);

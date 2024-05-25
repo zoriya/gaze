@@ -45,19 +45,19 @@ pub const Client = struct {
     }
 
     fn onMap(listener: *wl.Listener(void)) void {
-        const self = @fieldParentPtr(Client, "map_l", listener);
+        const self: *Client = @fieldParentPtr("map_l", listener);
         self.server.clients.prepend(self);
         // TODO: remove this and add this in a lua file
         Api.focus(self.server, self) catch {};
     }
 
     fn onUnmap(listener: *wl.Listener(void)) void {
-        const self = @fieldParentPtr(Client, "unmap_l", listener);
+        const self: *Client = @fieldParentPtr("unmap_l", listener);
         self.link.remove();
     }
 
     fn onDestroy(listener: *wl.Listener(void)) void {
-        const self = @fieldParentPtr(Client, "destroy_l", listener);
+        const self: *Client = @fieldParentPtr("destroy_l", listener);
         self.destroy();
     }
 };

@@ -4,8 +4,24 @@
     .paths = .{""},
     .dependencies = .{
         .ziglua = .{
-            .url = "https://github.com/natecraddock/ziglua/archive/8cd91ec9de5c206ae4e37034127d8972758dc55c.tar.gz",
-            .hash = "12205d977da825e681a09048180700bb4cc00bbeb417e8ff5c5fe59cb76189ffa592",
+            .url = "https://github.com/natecraddock/ziglua/archive/486f51d3acc61d805783f5f07aee34c75ab59a25.tar.gz",
+            .hash = "12208603e0f51fa6ce7201d8e851c5979b6b78887434623ac87a0f2a5a3dd3e75130",
+        },
+        .@"zig-pixman" = .{
+            .url = "https://codeberg.org/ifreund/zig-pixman/archive/v0.1.0.tar.gz",
+            .hash = "122014eeb4600a059bdcfe1c864862f17e6d5e4237e3bb7d6818f2a5583f6f4eb843",
+        },
+        .@"zig-wayland" = .{
+            .url = "https://codeberg.org/ifreund/zig-wayland/archive/v0.1.0.tar.gz",
+            .hash = "1220b0f8f822c1625af7aae4cb3ab2c4ec1a4c0e99ef32867b2a8d88bb070b3e7f6d",
+        },
+        .@"zig-wlroots" = .{
+            .url = "https://codeberg.org/ifreund/zig-wlroots/archive/v0.17.0.tar.gz",
+            .hash = "1220714d1cc39c3abb1d9c22a0b838d847ead099cb7d9931821490483f30c022e827",
+        },
+        .@"zig-xkbcommon" = .{
+            .url = "https://codeberg.org/ifreund/zig-xkbcommon/archive/v0.1.0.tar.gz",
+            .hash = "1220840390382c88caf9b0887f6cebbba3a7d05960b8b2ee6d80567b2950b71e5017",
         },
     },
 }

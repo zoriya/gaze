@@ -49,13 +49,13 @@ pub const Keyboard = struct {
     }
 
     fn modifiers(listener: *wl.Listener(*wlr.Keyboard), wlr_keyboard: *wlr.Keyboard) void {
-        const keyboard = @fieldParentPtr(Keyboard, "modifiers", listener);
+        const keyboard: *Keyboard = @fieldParentPtr("modifiers", listener);
         keyboard.server.seat.setKeyboard(wlr_keyboard);
         keyboard.server.seat.keyboardNotifyModifiers(&wlr_keyboard.modifiers);
     }
 
     fn key(listener: *wl.Listener(*wlr.Keyboard.event.Key), event: *wlr.Keyboard.event.Key) void {
-        const keyboard = @fieldParentPtr(Keyboard, "key", listener);
+        const keyboard: *Keyboard = @fieldParentPtr("key", listener);
 
         // TODO: Actually handle keybinds in gaze. Bellow is what was used in tinywl.
         // // Translate libinput keycode -> xkbcommon

@@ -29,8 +29,7 @@ pub fn focus(server: *Server, client: *Client) !void {
     const wlr_keyboard = server.seat.getKeyboard() orelse return;
     server.seat.keyboardNotifyEnter(
         client.xdg_surface.surface,
-        &wlr_keyboard.keycodes,
-        wlr_keyboard.num_keycodes,
+        wlr_keyboard.keycodes[0..wlr_keyboard.num_keycodes],
         &wlr_keyboard.modifiers,
     );
 }

@@ -69,18 +69,18 @@ pub const Monitor = struct {
     }
 
     fn onDestroy(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
-        const self = @fieldParentPtr(Monitor, "destroy_l", listener);
+        const self: *Monitor = @fieldParentPtr("destroy_l", listener);
         self.destroy();
     }
 
     fn onFrame(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
-        const output = @fieldParentPtr(Monitor, "frame_l", listener);
+        const output: *Monitor = @fieldParentPtr("frame_l", listener);
 
         const scene_output = output.server.scene.getSceneOutput(output.wlr_output).?;
         _ = scene_output.commit(null);
 
-        var now: std.os.timespec = undefined;
-        std.os.clock_gettime(std.os.CLOCK.MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
+        var now: std.posix.timespec = undefined;
+        std.posix.clock_gettime(std.posix.CLOCK.MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
         scene_output.sendFrameDone(&now);
     }
 
@@ -88,7 +88,7 @@ pub const Monitor = struct {
         listener: *wl.Listener(*wlr.Output.event.RequestState),
         event: *wlr.Output.event.RequestState,
     ) void {
-        const output = @fieldParentPtr(Monitor, "request_state_l", listener);
+        const output: *Monitor = @fieldParentPtr("request_state_l", listener);
 
         _ = output.wlr_output.commitState(event.state);
     }

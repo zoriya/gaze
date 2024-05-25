@@ -3,18 +3,18 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
 
-    zig-overlay.url = "github:mitchellh/zig-overlay";
-    zig-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    # zig-overlay.url = "github:mitchellh/zig-overlay";
+    # zig-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
-    zls-overlay.url = "github:zigtools/zls";
-    zls-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    # zls-overlay.url = "github:zigtools/zls";
+    # zls-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
     self,
     nixpkgs,
-    zig-overlay,
-    zls-overlay,
+    # zig-overlay,
+    # zls-overlay,
   }: let
     version = self.shortRev or "dirty";
     supportedSystems = ["x86_64-linux"];
@@ -44,7 +44,8 @@
 
               buildInputs =
                 [
-                  zig-overlay.packages.${system}.master-2024-01-02
+                  # zig-overlay.packages.${system}.master-2024-02-29
+                  zig_0_12
                   wlroots_0_17
                   libGL
                   libevdev
@@ -58,7 +59,8 @@
                 ++ (
                   if inShell
                   then [
-                    zls-overlay.packages.${system}.default
+                    # zls-overlay.packages.${system}.default
+                    zls
                     valgrind
                     gdb
                   ]

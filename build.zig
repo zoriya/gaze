@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const Scanner = @import("deps/zig-wayland/build.zig").Scanner;
+const Scanner = @import("zig-wayland").Scanner;
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -8,27 +8,6 @@ pub fn build(b: *std.Build) void {
 
     const scanner = Scanner.create(b, .{});
     scanner.addSystemProtocol("stable/xdg-shell/xdg-shell.xml");
-
-    const wayland = b.createModule(.{ .source_file = scanner.result });
-    const xkbcommon = b.createModule(.{
-        .source_file = .{ .path = "deps/zig-xkbcommon/src/xkbcommon.zig" },
-    });
-    const pixman = b.createModule(.{
-        .source_file = .{ .path = "deps/zig-pixman/pixman.zig" },
-    });
-    const wlroots = b.createModule(.{
-        .source_file = .{ .path = "deps/zig-wlroots/src/wlroots.zig" },
-        .dependencies = &.{
-            .{ .name = "wayland", .module = wayland },
-            .{ .name = "xkbcommon", .module = xkbcommon },
-            .{ .name = "pixman", .module = pixman },
-        },
-    });
-
-    const ziglua = b.dependency("ziglua", .{
-        .target = target,
-        .optimize = optimize,
-    });
 
     // These must be manually kept in sync with the versions wlroots supports
     // until wlroots gives the option to request a specific version.
@@ -40,6 +19,23 @@ pub fn build(b: *std.Build) void {
     scanner.generate("wl_data_device_manager", 3);
     scanner.generate("xdg_wm_base", 2);
 
+    const wayland = b.createModule(.{ .root_source_file = scanner.result });
+    const xkbcommon = b.dependency("zig-xkbcommon", .{}).module("xkbcommon");
+    const pixman = b.dependency("zig-pixman", .{}).module("pixman");
+    const wlroots = b.dependency("zig-wlroots", .{}).module("wlroots");
+
+    wlroots.addImport("wayland", wayland);
+    wlroots.addImport("xkbcommon", xkbcommon);
+    wlroots.addImport("pixman", pixman);
+
+    wlroots.resolved_target = target;
+    wlroots.linkSystemLibrary("wlroots", .{});
+
+    const ziglua = b.dependency("ziglua", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     const gaze = b.addExecutable(.{
         .name = "gaze",
         .root_source_file = .{ .path = "src/main.zig" },
@@ -49,21 +45,17 @@ pub fn build(b: *std.Build) void {
 
     gaze.linkLibC();
 
-    gaze.addModule("wayland", wayland);
+    gaze.root_module.addImport("wayland", wayland);
+    gaze.root_module.addImport("xkbcommon", xkbcommon);
+    gaze.root_module.addImport("wlroots", wlroots);
+    gaze.root_module.addImport("ziglua", ziglua.module("ziglua"));
+
     gaze.linkSystemLibrary("wayland-server");
+    gaze.linkSystemLibrary("xkbcommon");
+    gaze.linkSystemLibrary("pixman-1");
 
     // TODO: remove when https://github.com/ziglang/zig/issues/131 is implemented
     scanner.addCSource(gaze);
-
-    gaze.addModule("xkbcommon", xkbcommon);
-    gaze.linkSystemLibrary("xkbcommon");
-
-    gaze.addModule("wlroots", wlroots);
-    gaze.linkSystemLibrary("wlroots");
-    gaze.linkSystemLibrary("pixman-1");
-
-    gaze.addModule("ziglua", ziglua.module("ziglua"));
-    gaze.linkLibrary(ziglua.artifact("lua"));
 
     b.installArtifact(gaze);
 }

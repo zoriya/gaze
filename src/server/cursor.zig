@@ -75,7 +75,7 @@ pub const Cursor = struct {
         listener: *wl.Listener(*wlr.Pointer.event.Motion),
         event: *wlr.Pointer.event.Motion,
     ) void {
-        const self = @fieldParentPtr(Cursor, "motion", listener);
+        const self: *Cursor = @fieldParentPtr("motion", listener);
         self.cursor.move(event.device, event.delta_x, event.delta_y);
         self.handleMotion(event.time_msec);
     }
@@ -84,7 +84,7 @@ pub const Cursor = struct {
         listener: *wl.Listener(*wlr.Pointer.event.MotionAbsolute),
         event: *wlr.Pointer.event.MotionAbsolute,
     ) void {
-        const self = @fieldParentPtr(Cursor, "motion_absolute", listener);
+        const self: *Cursor = @fieldParentPtr("motion_absolute", listener);
         self.cursor.warpAbsolute(event.device, event.x, event.y);
         self.handleMotion(event.time_msec);
     }
@@ -93,7 +93,7 @@ pub const Cursor = struct {
         listener: *wl.Listener(*wlr.Pointer.event.Button),
         event: *wlr.Pointer.event.Button,
     ) void {
-        const self = @fieldParentPtr(Cursor, "button", listener);
+        const self: *Cursor = @fieldParentPtr("button", listener);
         _ = self.server.seat.pointerNotifyButton(event.time_msec, event.button, event.state);
     }
 
@@ -101,7 +101,7 @@ pub const Cursor = struct {
         listener: *wl.Listener(*wlr.Pointer.event.Axis),
         event: *wlr.Pointer.event.Axis,
     ) void {
-        const self = @fieldParentPtr(Cursor, "axis", listener);
+        const self: *Cursor = @fieldParentPtr("axis", listener);
         self.server.seat.pointerNotifyAxis(
             event.time_msec,
             event.orientation,
@@ -112,7 +112,7 @@ pub const Cursor = struct {
     }
 
     fn onFrame(listener: *wl.Listener(*wlr.Cursor), _: *wlr.Cursor) void {
-        const self = @fieldParentPtr(Cursor, "frame", listener);
+        const self: *Cursor = @fieldParentPtr("frame", listener);
         self.server.seat.pointerNotifyFrame();
     }
 
@@ -120,7 +120,7 @@ pub const Cursor = struct {
         listener: *wl.Listener(*wlr.Seat.event.RequestSetCursor),
         event: *wlr.Seat.event.RequestSetCursor,
     ) void {
-        const self = @fieldParentPtr(Cursor, "request_set_cursor_l", listener);
+        const self: *Cursor = @fieldParentPtr("request_set_cursor_l", listener);
         if (event.seat_client == self.server.seat.pointer_state.focused_client)
             self.cursor.setSurface(event.surface, event.hotspot_x, event.hotspot_y);
     }
@@ -129,7 +129,7 @@ pub const Cursor = struct {
         listener: *wl.Listener(*wlr.Seat.event.RequestSetSelection),
         event: *wlr.Seat.event.RequestSetSelection,
     ) void {
-        const self = @fieldParentPtr(Cursor, "request_set_selection_l", listener);
+        const self: *Cursor = @fieldParentPtr("request_set_selection_l", listener);
         self.server.seat.setSelection(event.source, event.serial);
     }
 };
